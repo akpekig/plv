@@ -1,5 +1,6 @@
 from settings import MICROSOFT_TOKEN_URL, MICROSOFT_TOKEN_GRANT_TYPE, MICROSOFT_TOKEN_SCOPE, MICROSOFT_CLIENT_ID, MICROSOFT_CLIENT_SECRET
 import requests
+import json
 
 def get_token():
     """
@@ -21,3 +22,19 @@ def get_token():
     query = requests.post(url, data=params).json()
     token = query["access_token"]
     return token
+
+def validate_req_body(req_body: dict, schema: dict):
+    """
+    Validates request body against schema.
+
+    Args:
+        req_body (dict): The request body.
+
+    Raises:
+        jsonschema.exceptions.ValidationError: If the request body is invalid.
+    """
+    try:
+        jsonschema.validate(req_body, schema)
+        return True
+    except jsonschema.ValidationError:
+        return False
