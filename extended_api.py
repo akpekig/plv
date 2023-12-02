@@ -34,3 +34,26 @@ def closest_stops(lat: float, lon: float):
     query = requests.get(url, headers=headers, params=params).json()
     stops = query["places"]
     return stops
+
+@app.route("/api/best-entrance/<stop_id>")
+def best_entrance(stop_id: str):
+    """
+    Retrieves the best entrance for the given stop.
+
+    Args:
+        stop_id (str): The ID of the stop.
+
+    Returns:
+        dict: The best entrance for the given stop.
+    """
+    url = f"{JOURNEY_SERVICE_BASE_URL}/v3/stops/{stop_id}/best-entrance"
+    token = get_token()
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "accept": "application/json",
+        "Accept-Language": "en",
+        "Content-Type": "application/json"
+    }
+    query = requests.get(url, headers=headers).json()
+    entrance = query["bestEntrance"]
+    return entrance
