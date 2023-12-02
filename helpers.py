@@ -21,16 +21,3 @@ def get_token():
     query = requests.post(url, data=params).json()
     token = query["access_token"]
     return token
-
-def get_closest_stops(lat, lon):
-    """
-    Retrieves the closest stops based on the given latitude and longitude.
-
-    Args:
-        lat (float): The latitude coordinate.
-        lon (float): The longitude coordinate.
-
-    Returns:
-        list: A list of closest stops.
-    """
-    pass

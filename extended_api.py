@@ -1,6 +1,6 @@
 import requests
 from flask import Flask
-from helpers import get_token, get_closest_stops
+from helpers import get_token
 from markupsafe import escape
 from settings import JOURNEY_SERVICE_BASE_URL
 
@@ -33,5 +33,4 @@ def closest_stops(lat: float, lon: float):
     }
     query = requests.get(url, headers=headers, params=params).json()
     stops = query["places"]
-    stops = get_closest_stops(stops)
     return stops
