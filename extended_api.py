@@ -29,7 +29,7 @@ def closest_stops(lat: float, lon: float):
     params = {
         "longitude": escape(lon),
         "latitude": escape(lat),
-        "radius": "1609.34",
+        "radius": "1609",
     }
     query = requests.post(url, headers=headers, json=params).json()
     stops = query["places"]
