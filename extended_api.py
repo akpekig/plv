@@ -6,8 +6,8 @@ from settings import JOURNEY_SERVICE_BASE_URL
 
 app = Flask(__name__)
 
-@app.route("/api/closest-stops/<lat>/<lon>")
-def closest_stops(lat: float, lon: float):
+@app.route("/api/closest-stops/<lat>/<lon>/<radius>")
+def closest_stops(lat: float, lon: float, radius: int):
     """
     Retrieves the closest stops based on the given latitude and longitude.
 
@@ -29,7 +29,7 @@ def closest_stops(lat: float, lon: float):
     params = {
         "longitude": escape(lon),
         "latitude": escape(lat),
-        "radius": "1609",
+        "radius": escape(radius),
     }
     query = requests.get(url, headers=headers, params=params).json()
     stops = query["places"]
