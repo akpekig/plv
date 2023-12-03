@@ -1,0 +1,8 @@
+header, main {
+    width: 100vw;
+}
+
+header {
+    height: 100px;
+    background-color: #da291c;
+}

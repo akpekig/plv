@@ -1,6 +1,14 @@
+import '../styles/global.css';
+
 const Home = () => {
     return (
-        <>Hello World</>
+        <div>
+        <header>
+        </header>
+        <main>
+            
+        </main>
+        </div>
     )
 }
 
