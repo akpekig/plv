@@ -1,3 +1,10 @@
-.gitignore
-.env*
-README.md
+.env
+.git*
+
+docker-compose.yml
+Dockerfile
+.pytest_cache/
+.vscode/
+ui/
+
+**/__pycache__/

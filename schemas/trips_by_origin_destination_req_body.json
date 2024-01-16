@@ -1,0 +1,414 @@
+{
+  "title": "TripsByOriginAndDestinationRequestBody",
+  "type": "object",
+  "properties": {
+    "origin": {
+      "type": "string",
+      "description": "Starting point of the trip at origin (departure). See v3 **PlaceReference** in [complex parameter](https://github.com/SchweizerischeBundesbahnen/journey-service/blob/master/JSON-Objects.md)",
+      "example": "8503000"
+    },
+    "destination": {
+      "type": "string",
+      "description": "Ending point of the trip at destination (arrival). See **PlaceReference** in [complex parameter](https://github.com/SchweizerischeBundesbahnen/journey-service/blob/master/JSON-Objects.md)",
+      "example": "[7.435194,46.945679]"
+    },
+    "originRadius": {
+      "type": "integer",
+      "description": "Tolerated walk distance (radius [m]) at `Place` origin (departure). Default is 1500",
+      "format": "int32",
+      "example": 800
+    },
+    "destinationRadius": {
+      "type": "integer",
+      "description": "Tolerated walk distance (radius [m]) at `Place` destination (arrival). Default is 1500",
+      "format": "int32",
+      "example": 1500
+    },
+    "forArrival": {
+      "type": "boolean",
+      "description": "Search for arriving (true) or departing (false) trips.",
+      "default": false
+    },
+    "date": {
+      "type": "string",
+      "description": "(Local) date at either origin (`forArrival`=false) or destination (`forArrival`=true) related to `time`, defaults to TODAY.",
+      "format": "date",
+      "example": "2023-04-18"
+    },
+    "time": {
+      "type": "string",
+      "description": "Local time at either origin (`forArrival`=false) or destination (`forArrival`=true) related to `date`, defaults to NOW (seconds will be ignored).",
+      "format": "time",
+      "example": "13:07"
+    },
+    "occupancyAverage": {
+      "type": "string",
+      "description": "Find trips with average occupancy (or better, by means emptier) per passenger-class in Public Transportation vehicle.<br>x-extensible-enum: ",
+      "enum": [
+        "ALL",
+        "FIRST_LOW",
+        "FIRST_MEDIUM",
+        "FIRST_HIGH",
+        "SECOND_LOW",
+        "SECOND_MEDIUM",
+        "SECOND_HIGH"
+      ],
+      "default": "ALL"
+    },
+    "mobilityFilter": {
+      "type": "object",
+      "properties": {
+        "maxTransfers": {
+          "maximum": 11,
+          "minimum": 0,
+          "type": "integer",
+          "description": "Max. number of Vehicle changes. The parameter is relevant between origin and destination or between origin and ptVias[0] if any among all PTRideLeg's.",
+          "format": "int32",
+          "default": 11
+        },
+        "walkSpeed": {
+          "type": "integer",
+          "description": "Walking speed when changing Vehicles: 100% means default speed, 200% doubles it and below 100% will reduce changing time below SBB recommendation.\n- If the calculation does not result in full minutes, it is rounded using 'round half up' method.\n- See `Trip::fastTransfer` for time risky changes.",
+          "format": "int32",
+          "default": 100
+        },
+        "additionalTransferTime": {
+          "type": "integer",
+          "description": "Additional time [in min.] on top of default transfer time when changing Vehicle's.",
+          "format": "int32",
+          "default": 0
+        },
+        "minTransferTime": {
+          "minimum": 0,
+          "type": "integer",
+          "description": "Minimum change time [in min.] when changing transport-products. There is no constant default, depends on SBB defined changing time at specific STATION.",
+          "format": "int32"
+        },
+        "maxTransferTime": {
+          "minimum": 0,
+          "type": "integer",
+          "description": "Maximum change time at stop in minutes. In realtimeMode=FULL only planned time is considered (by means not guaranteed if dateTimeRt is given).",
+          "format": "int32"
+        }
+      },
+      "description": "Parameters to restrict the transfer options - particularly for interchanging PTRideLeg's by passenger (de: Individuelles Umsteigeverhalten).\n- TripsByOriginAndDestinationPostBody: all filters supported\n- ServiceCalendarByOriginAndDestinationRequestBody: only `maxTransfers` supported yet"
+    },
+    "vias": {
+      "type": "array",
+      "items": {
+        "required": ["stopPlaceId"],
+        "type": "object",
+        "properties": {
+          "stopPlaceId": {
+            "type": "string",
+            "description": "`StopPlace::id` to be passed as via.",
+            "example": "8507000"
+          },
+          "status": {
+            "type": "string",
+            "description": "Boarding/alighting-status at via `StopPlace`.<br>x-extensible-enum: ",
+            "enum": [
+              "BOARDING_ALIGHTING_NECESSARY",
+              "BOARDING_NOT_NECESSARY",
+              "ALIGHTING_NOT_NECESSARY",
+              "BOARDING_ALIGHTING_NOT_NECESSARY"
+            ],
+            "default": "BOARDING_ALIGHTING_NECESSARY"
+          },
+          "transportModes": {
+            "uniqueItems": true,
+            "type": "array",
+            "description": "The modes are relevant until the next Via. Optionally restrict to a requestable set of SBB specific TransportMode's (aka OJP PTMode). The set is relevant for any vehicle-journey (`DatedVehicleJourney`, `PTRideLeg`, ..). Relates to `ServiceProduct::vehicleMode` and `::vehicleSubModes`.\n- Default: non-restricted (null or empty-list), by means all TransportMode's are searched.\n- If some choice is made, other TransportMode's are excluded implicitely.\n- To get TRAIN (VehicleMode::id) only, add: [HIGH_SPEED_TRAIN,INTERCITY,INTERREGIO,REGIO,URBAN_TRAIN,SPECIAL_TRAIN]\n>- Be aware that TRAMWAY also searches for METRO (not distinguished it here further!)\n- Also there is no exact possibility to distinguish more precisely between CABLEWAY_GONDOLA_CHAIRLIFT_FUNICULAR at search time<br><br>x-extensible-enum: ",
+            "items": {
+              "type": "string",
+              "description": "Optionally restrict to a requestable set of SBB specific TransportMode's (aka OJP PTMode). The set is relevant for any vehicle-journey (`DatedVehicleJourney`, `PTRideLeg`, ..). Relates to `ServiceProduct::vehicleMode` and `::vehicleSubModes`.\n- Default: non-restricted (null or empty-list), by means all TransportMode's are searched.\n- If some choice is made, other TransportMode's are excluded implicitely.\n- To get TRAIN (VehicleMode::id) only, add: [HIGH_SPEED_TRAIN,INTERCITY,INTERREGIO,REGIO,URBAN_TRAIN,SPECIAL_TRAIN]\n>- Be aware that TRAMWAY also searches for METRO (not distinguished it here further!)\n- Also there is no exact possibility to distinguish more precisely between CABLEWAY_GONDOLA_CHAIRLIFT_FUNICULAR at search time<br><br>x-extensible-enum: ",
+              "enum": [
+                "HIGH_SPEED_TRAIN",
+                "INTERCITY",
+                "INTERREGIO",
+                "REGIO",
+                "URBAN_TRAIN",
+                "SPECIAL_TRAIN",
+                "SHIP",
+                "BUS",
+                "TRAMWAY",
+                "CABLEWAY_GONDOLA_CHAIRLIFT_FUNICULAR"
+              ]
+            }
+          },
+          "waittime": {
+            "minimum": 0,
+            "type": "integer",
+            "description": "Minimum waiting time to be spent at via StopPlace [min.]. Some additional minutes might be added by underlying router (aka OJP dwellTime).",
+            "format": "int32"
+          },
+          "direct": {
+            "type": "boolean",
+            "description": "true: Via section has to be direct (relates to ChangeBehaviour::maxChanges); false: might be direct or not.",
+            "default": false
+          },
+          "couchette": {
+            "type": "boolean",
+            "description": "true: Via section should include couchette Car.",
+            "default": false
+          },
+          "sleepingCar": {
+            "type": "boolean",
+            "description": "true: Via section should include sleeping car.",
+            "default": false
+          }
+        },
+        "description": "Specification and behaviour of via StopPlace (aka OJP TripViaStructure).\n- TripsByOriginAndDestinationPostBody: all filters supported\n- ServiceCalendarByOriginAndDestinationRequestBody: only `stopPlaceId` and `transportModes` supported yet"
+      }
+    },
+    "viasNot": {
+      "type": "array",
+      "items": {
+        "required": ["stopPlaceId"],
+        "type": "object",
+        "properties": {
+          "stopPlaceId": {
+            "type": "string",
+            "description": "StopPlace::id NOT to be passed as via.",
+            "example": "8503000"
+          },
+          "status": {
+            "type": "string",
+            "description": "No pass through status.<br>x-extensible-enum: ",
+            "enum": ["NO_PASS_THROUGH_META_STOPPLACE", "NO_PASS_THROUGH"],
+            "default": "NO_PASS_THROUGH_META_STOPPLACE"
+          }
+        },
+        "description": "Specify to prevent routing by a certain `StopPlace` on a `Trip`, by means such a place should not be on the Trip whether as a transferring nor intermediate stop."
+      }
+    },
+    "viasNoTransfer": {
+      "type": "array",
+      "items": {
+        "required": ["stopPlaceId"],
+        "type": "object",
+        "properties": {
+          "stopPlaceId": {
+            "type": "string",
+            "description": "StopPlace::id where Vehicle must NOT be changed.",
+            "example": "8506000"
+          },
+          "status": {
+            "type": "string",
+            "description": "Status to force transfer-behaviour at a `StopPlace` (whether a StopPlace is meta is defined by SBB Data-Management).<br>x-extensible-enum: ",
+            "enum": ["NO_TRANSFER_META_STOPPLACE", "NO_TRANSFER"],
+            "default": "NO_TRANSFER_META_STOPPLACE"
+          }
+        },
+        "description": "Specify to prevent transferring Vehicle's at certain `StopPlace` on `Trip`. Can be useful to avoid certain places (for e.g. not handicap capable enough)."
+      }
+    },
+    "realtimeMode": {
+      "type": "string",
+      "description": "<br>x-extensible-enum: \n- `REALTIME` potentially planned and RT **including non-rideable** (like cancelled)\n- `REALTIME_RIDEABLE` as `REALTIME` but **excluding non-rideable**\n- `OFF` **planned only**",
+      "enum": ["REALTIME", "REALTIME_RIDEABLE", "OFF"],
+      "default": "REALTIME"
+    },
+    "pagingCursor": {
+      "type": "string",
+      "description": "Based on a returned `TripResponse::pagingCursor`, `previous` or `next` connections **reusing the very same search-parameters** can be retrieved by scrolling pagination mechanisme, see `Trip::pagingChecksum`)."
+    },
+    "optimisationMethod": {
+      "type": "object",
+      "properties": {
+        "numberOfResultsBefore": {
+          "maximum": 6,
+          "minimum": 0,
+          "type": "integer",
+          "description": "Indicate the minimum number of search results returned before related dateTime.<br>This parameter has an impact on performance and/or response volume, set wisely!",
+          "format": "int32",
+          "default": 0
+        },
+        "numberOfResultsAfter": {
+          "maximum": 6,
+          "minimum": 0,
+          "type": "integer",
+          "description": "Indicate the minimum number of search results returned after related dateTime.<br>This parameter has an impact on performance and/or response volume, set wisely!",
+          "format": "int32",
+          "default": 5
+        }
+      },
+      "description": "Configure the search algorithm influencing Trip search results."
+    },
+    "includeAccessibility": {
+      "type": "string",
+      "description": "Accessibility (de:BFR/BAIM) for better handicap support using vehicles. If available relevant on first (boarding) and last (alighting) ScheduledStopPoint per PTRideLeg. Impacts `ScheduledStopPoint::accessibilityBoardingAlighting`.<br>x-extensible-enum:  see enum values.<br>`ServiceJourney::notices` will get an entry of `type=INFO, key=RN` if available, its `Notice::value` is relevant for Postauto AG (PAG) operations-reference.",
+      "enum": [
+        "ALL",
+        "ALL_TRANSFER_CRITICAL_HINT",
+        "BOARDING_ALIGHTING_SELF",
+        "BOARDING_ALIGHTING_BY_CREW",
+        "BOARDING_ALIGHTING_BY_NOTIFICATION",
+        "BOARDING_ALIGHTING_SHUTTLE_TRANSPORT",
+        "NONE"
+      ],
+      "default": "ALL"
+    },
+    "includeAlternateMatch": {
+      "type": "string",
+      "description": "Post-filter to adjust cancelled/alternate 1:1 Trip cases per response (de:Ausfall/Ersatz) according to SBB BR, where other Trip's remain as is.<br>x-extensible-enum: \n- IRRELEVANT: no adaption\n- BOTH: as IRRELEVANT but some Note's will be cloned from cancelled to 1:1 alternate Trip\n- ALTERNATE_ONLY: suppresses cancelled 1:1 Trip's if matched with alternates\n- CANCELLED_ONLY: suppress exactly matching 1:1 alternates",
+      "enum": ["IRRELEVANT", "BOTH", "ALTERNATE_ONLY", "CANCELLED_ONLY"],
+      "default": "IRRELEVANT"
+    },
+    "includeNoticeAttributes": {
+      "uniqueItems": true,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "Searchable `Notice's` values for type=ATTRIBUTE. Relates to `ServiceJourney::notices`.<br>x-extensible-enum: \n- `TripsByOriginAndDestinationPostBody::includeNoticeAttributes`: all values supported and also applied in related `vias` except COUCHETTE/SLEEPING_CAR\n- `ServiceCalendarByOriginAndDestinationRequestBody::includeNoticeAttributes`: only 'BIKE_TRANSPORT' supported yet",
+        "enum": [
+          "GROUPS_ADMITTED",
+          "BIKE_TRANSPORT",
+          "COUCHETTE",
+          "SLEEPING_CAR",
+          "EXCLUDE_TILTING_TRAIN"
+        ]
+      }
+    },
+    "includeEconomic": {
+      "type": "boolean",
+      "description": "Consider additional connections by Bus or S-Bahn leading to destination as well (de:'Zusätzliche Alternativverbindungen', 'Mehrdimensionale Suche', 'Preiswerte Suche').<br>This parameter has an impact on performance and/or response volume, set wisely!",
+      "default": false
+    },
+    "includeUnsharp": {
+      "type": "boolean",
+      "description": "Consider alternative stations origin/destination (de: Erweiterte Anzeige).",
+      "default": false
+    },
+    "includeEarlier": {
+      "type": "boolean",
+      "description": "Consider earlier leaving connections, even if arrival is later.",
+      "default": false
+    },
+    "includeEcologyComparison": {
+      "type": "string",
+      "description": "Create Trip::EcoBalance (C02, ..) per Trip. DEFAULT is based on SBB default car eco-params.<br>x-extensible-enum: ",
+      "enum": ["NONE", "DEFAULT"],
+      "default": "NONE"
+    },
+    "includeTransportModes": {
+      "uniqueItems": true,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "Optionally restrict to a requestable set of SBB specific TransportMode's (aka OJP PTMode). The set is relevant for any vehicle-journey (`DatedVehicleJourney`, `PTRideLeg`, ..). Relates to `ServiceProduct::vehicleMode` and `::vehicleSubModes`.\n- Default: non-restricted (null or empty-list), by means all TransportMode's are searched.\n- If some choice is made, other TransportMode's are excluded implicitely.\n- To get TRAIN (VehicleMode::id) only, add: [HIGH_SPEED_TRAIN,INTERCITY,INTERREGIO,REGIO,URBAN_TRAIN,SPECIAL_TRAIN]\n>- Be aware that TRAMWAY also searches for METRO (not distinguished it here further!)\n- Also there is no exact possibility to distinguish more precisely between CABLEWAY_GONDOLA_CHAIRLIFT_FUNICULAR at search time<br><br>x-extensible-enum: ",
+        "enum": [
+          "HIGH_SPEED_TRAIN",
+          "INTERCITY",
+          "INTERREGIO",
+          "REGIO",
+          "URBAN_TRAIN",
+          "SPECIAL_TRAIN",
+          "SHIP",
+          "BUS",
+          "TRAMWAY",
+          "CABLEWAY_GONDOLA_CHAIRLIFT_FUNICULAR"
+        ]
+      }
+    },
+    "includeOperatingDays": {
+      "type": "boolean",
+      "description": "`Trip::operatingPeriods` will always be returned if it is a **repeatable planned Trip over the period**. To enforce concrete planned dates in `OperatingPeriod::operatingDays`set `includeOperatingDays=true` (PTRideLeg::serviceJourney::operationPeriods will remain empty, because whole Trip is of interest).<br>This parameter has an impact on performance and/or response volume, set wisely!",
+      "default": false
+    },
+    "includeRouteProjection": {
+      "type": "boolean",
+      "description": "With or without a plottable polyline for each vehicle-journey (if available).<br>This parameter has an impact on performance and/or response volume, set wisely!",
+      "default": false
+    },
+    "includeGroupReservation": {
+      "type": "string",
+      "description": "Relates to `PTRideLeg::groupReservationStatus`. Include the status for group-reservation possibilities (source CAPRE).<br>Format 'x:y' which means to check reservation status for number of x passenger in first class and y passengers in second class.<br>Needs specific GRANT rights, do not specify unless you have them!<br>This parameter has an impact on performance and/or response volume, set wisely! `ServiceJourney::notices` will get an entry of `type=INFO, key=RN` if available, its `Notice::value` is relevant for Postauto AG (PAG) operations-reference.",
+      "example": "5:7"
+    },
+    "includeSummary": {
+      "type": "boolean",
+      "description": "Create some summary facts about each Trip (useful for UI overviews).<br>This parameter has an impact on performance and/or response volume, set wisely!",
+      "default": false
+    },
+    "includeIntermediateStops": {
+      "type": "string",
+      "description": "Whether the `PTRideLeg's` should include intermediate stops (between the passenger's board and alight in `ServiceJourney::stopPoints`).<br>x-extensible-enum:  [ALL,NONE,BOARDING_ALIGHTING] where ALL is BOARDING_ALIGHTING plus virtual stops.",
+      "enum": ["ALL", "BOARDING_ALIGHTING", "NONE"],
+      "default": "ALL"
+    },
+    "includeTrainStopAssignments": {
+      "type": "string",
+      "description": "Whether `PTRideLeg's` should include `CompoundTrain's`(aka formation, composition). However, `CompoundTrain's` at any `ScheduledStopPoint` on the `ServiceJourney` may be loaded separately by `/v3/vehicle-journeys/by-stoppoints`.\nPossible values:\n- NONE none at all, though a `PTRideLeg::trainStopAssignmentHint` is always given.\n- ORIGIN  `TrainStopAssignment's` are added to first (departure) `ScheduledStopPoint` of each `PTRideLeg` \n- ORIGIN_DESTINATION `TrainStopAssignment's` are added to first (departure) and last (arrival) `ScheduledStopPoint` of each `PTRideLeg` having a `TrainStopAssignment` resp. a `CompoundTrain`.",
+      "enum": ["NONE", "ORIGIN", "ORIGIN_DESTINATION"],
+      "default": "NONE"
+    },
+    "excludeDatedVehicleJourneys": {
+      "type": "array",
+      "items": {
+        "required": ["name"],
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Set the complete name as returned by `ServiceProduct`, see [ServiceProductReference](https://github.com/SchweizerischeBundesbahnen/journey-service/blob/master/JSON-Objects.md#serviceproductreference) for proper format.",
+            "example": "IC 1 753"
+          },
+          "start": {
+            "required": ["dateTime", "stopPlaceId"],
+            "type": "object",
+            "properties": {
+              "stopPlaceId": {
+                "type": "string",
+                "description": "`StopPlace::id` value related to `dateTime`.",
+                "example": "8507000"
+              },
+              "dateTime": {
+                "type": "string",
+                "description": "Departure or arrival date/time ([ISO-8601](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) UTC with time-numoffset (like '+02:00')) at `stopPlaceId`.",
+                "format": "date-time",
+                "example": "2023-04-18T14:55:00+01:00"
+              }
+            },
+            "description": "ScheduledStopPoint reference to a StopPlace (PlaceReference) with a departure or arrival dateTime, see [ScheduledStopPointReference](https://github.com/SchweizerischeBundesbahnen/journey-service/blob/master/JSON-Objects.md#scheduledstoppointreference)."
+          },
+          "end": {
+            "required": ["dateTime", "stopPlaceId"],
+            "type": "object",
+            "properties": {
+              "stopPlaceId": {
+                "type": "string",
+                "description": "`StopPlace::id` value related to `dateTime`.",
+                "example": "8507000"
+              },
+              "dateTime": {
+                "type": "string",
+                "description": "Departure or arrival date/time ([ISO-8601](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) UTC with time-numoffset (like '+02:00')) at `stopPlaceId`.",
+                "format": "date-time",
+                "example": "2023-04-18T14:55:00+01:00"
+              }
+            },
+            "description": "ScheduledStopPoint reference to a StopPlace (PlaceReference) with a departure or arrival dateTime, see [ScheduledStopPointReference](https://github.com/SchweizerischeBundesbahnen/journey-service/blob/master/JSON-Objects.md#scheduledstoppointreference)."
+          },
+          "operatorNumber": {
+            "type": "string",
+            "description": "The `ServiceProduct::operator::id` for e.g. '000011' as returned by J-S.",
+            "example": "000011"
+          },
+          "operatingDay": {
+            "type": "string",
+            "description": "Operating-day of the `ServiceJourney`.",
+            "format": "date"
+          }
+        },
+        "description": "Reference to a `DatedVehicleJourney` (aka OJP DatedJourneyRef). See [complex JSON parameter **DatedVehicleJourneyReference**](https://github.com/SchweizerischeBundesbahnen/journey-service/blob/master/JSON-Objects.md#datedvehiclejourneyreference)"
+      }
+    },
+    "excludeFootpathAtOriginAndDestination": {
+      "type": "boolean",
+      "description": "In case of `StopPlace` to `StopPlace` at origin and/or destination set true to prevent `AccessLeg's` at beginning or end.",
+      "default": false
+    }
+  },
+  "description": "Request parameters (POST body). OJP passive instance requires Stop UIC like '850700' whereas active instance enforces 'OJP:STOP:SBB:8507000|Bern'."
+}

@@ -1,2 +1,16 @@
 .env
-venv/
+**/venv/
+**/.vscode/
+**/node_modules/
+**/.idea/
+**/.pytest_cache/
+**/.mypy_cache/
+**/__pycache__/
+**/.coverage
+**/.pytest_cache
+**/.mypy_cache
+**/.coverage
+**/.DS_Store
+**/.vscode
+**/.idea
+**/.pyte

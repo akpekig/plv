@@ -1,12 +1,11 @@
 {
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "next dev",
     "build": "next build"
   },
   "dependencies": {
-    "@geoapify/geocoder-autocomplete": "^2.0.1",
-    "@geoapify/react-geocoder-autocomplete": "^2.0.0",
     "next": "latest",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"

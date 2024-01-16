@@ -2,7 +2,7 @@
 FROM python:3.10-alpine as base
 
 # Set the working directory
-WORKDIR /api
+WORKDIR /var/www
 
 # Copy only the requirements file to optimize caching
 COPY requirements.txt .
@@ -17,7 +17,8 @@ COPY . .
 
 # Expose the port that Flask will run on
 EXPOSE 5000
-ENV FLASK_APP=app.py
+ENV FLASK_APP=plv.app
+ENV PYTHONPATH=/var/www:$PYTHONPATH
 
 # Run the application
 CMD ["flask", "run", "--host", "0.0.0.0"]

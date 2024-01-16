@@ -1,6 +1,16 @@
-from settings import MICROSOFT_TOKEN_URL, MICROSOFT_TOKEN_GRANT_TYPE, MICROSOFT_TOKEN_SCOPE, MICROSOFT_CLIENT_ID, MICROSOFT_CLIENT_SECRET
-import requests
 import json
+
+import jsonschema
+import requests
+
+from plv.settings import (
+    MICROSOFT_CLIENT_ID,
+    MICROSOFT_CLIENT_SECRET,
+    MICROSOFT_TOKEN_GRANT_TYPE,
+    MICROSOFT_TOKEN_SCOPE,
+    MICROSOFT_TOKEN_URL,
+)
+
 
 def get_token():
     """
@@ -17,11 +27,12 @@ def get_token():
         "grant_type": MICROSOFT_TOKEN_GRANT_TYPE,
         "scope": MICROSOFT_TOKEN_SCOPE,
         "client_id": MICROSOFT_CLIENT_ID,
-        "client_secret": MICROSOFT_CLIENT_SECRET
+        "client_secret": MICROSOFT_CLIENT_SECRET,
     }
     query = requests.post(url, data=params).json()
     token = query["access_token"]
     return token
+
 
 def validate_req_body(req_body: dict, schema: dict):
     """
